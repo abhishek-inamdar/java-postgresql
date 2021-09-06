@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+mainClassName =  (findProperty('mainClass') ?: 'Evaluate')
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.postgresql:postgresql:42.2.23'
+    implementation 'io.codearte.jfairy:jfairy:0.5.9'
+}
