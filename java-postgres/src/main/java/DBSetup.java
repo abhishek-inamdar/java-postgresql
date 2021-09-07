@@ -19,7 +19,7 @@ public class DBSetup extends DBBase {
                     "  PRIMARY KEY (USER_NAME));";
     static final String CREATE_PRODUCTS_TABLE =
             "CREATE TABLE PRODUCTS (" +
-                    "  PRODUCT_ID VARCHAR(15)," +
+                    "  PRODUCT_ID SERIAL," +
                     "  NAME TEXT NOT NULL," +
                     "  DESCRIPTION TEXT," +
                     "  PRICE NUMERIC NOT NULL CHECK (PRICE > 0)," +
@@ -28,7 +28,7 @@ public class DBSetup extends DBBase {
     static final String CREATE_REVIEWS_TABLE =
             "CREATE TABLE REVIEWS (" +
                     "  USER_NAME VARCHAR(15)," +
-                    "  PRODUCT_ID VARCHAR(15)," +
+                    "  PRODUCT_ID INTEGER," +
                     "  REVIEW_TEXT TEXT," +
                     "  RATING FLOAT NOT NULL CHECK (RATING > 0) CHECK (RATING < 5)," +
                     "  REVIEW_DATE TIMESTAMP NOT NULL," +
@@ -45,7 +45,7 @@ public class DBSetup extends DBBase {
     static final String CREATE_ORDER_DETAILS_TABLE =
             "CREATE TABLE ORDER_DETAILS (" +
                     "  ORDER_ID VARCHAR(15)," +
-                    "  PRODUCT_ID VARCHAR(15)," +
+                    "  PRODUCT_ID INTEGER," +
                     "  QUANTITY INTEGER NOT NULL CHECK (QUANTITY > 0)," +
                     "  PRIMARY KEY (ORDER_ID, PRODUCT_ID)," +
                     "  FOREIGN KEY (ORDER_ID) REFERENCES ORDERS(ORDER_ID)," +
@@ -57,9 +57,6 @@ public class DBSetup extends DBBase {
      * @throws SQLException If an SQl Error occurs
      */
     public void createTables() throws SQLException {
-        if (Objects.isNull(getConnection())) {
-            establishConnection();
-        }
         Connection con = getConnection();
         Statement stmt = null;
         try {
@@ -74,6 +71,9 @@ public class DBSetup extends DBBase {
             try {
                 if (!Objects.isNull(stmt)) {
                     stmt.close();
+                }
+                if (!Objects.isNull(con)) {
+                    con.close();
                 }
             } catch (SQLException e) {
                 System.err.println("Something went REALLY wrong.");

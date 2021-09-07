@@ -30,7 +30,10 @@ public class DBBase {
      *
      * @return Connection object
      */
-    public static Connection getConnection() {
+    public static Connection getConnection() throws SQLException {
+        if(Objects.isNull(connection) || connection.isClosed()){
+            establishConnection();
+        }
         return connection;
     }
 
@@ -40,7 +43,7 @@ public class DBBase {
      * @throws SQLException If an SQL Error occurs
      */
     public static void establishConnection() throws SQLException {
-        if (Objects.isNull(connection)) {
+        if (Objects.isNull(connection) || connection.isClosed()) {
             // Read the properties file
             // it should contain following properties
             // URL, USERNAME, PASSWORD
