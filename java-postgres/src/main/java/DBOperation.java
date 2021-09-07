@@ -1,7 +1,4 @@
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
@@ -56,7 +53,7 @@ public class DBOperation {
      * @return true if user is authorized, false otherwise
      * @throws SQLException If SQL error occurs
      */
-    public boolean isUserAuthorized(Connection con, String userName, String password) throws SQLException {
+    private boolean isUserAuthorized(Connection con, String userName, String password) throws SQLException {
         con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         con.setAutoCommit(false);
         PreparedStatement stmt = null;
@@ -80,7 +77,6 @@ public class DBOperation {
             if (!Objects.isNull(stmt)) {
                 stmt.close();
             }
-            con.close();
         }
     }
 
@@ -113,11 +109,33 @@ public class DBOperation {
      * @param reviewText Review Text
      * @throws SQLException If SQL error occurs
      */
-    public void postReview(Connection con, String userName, String password, String productId,
-                           float rating, String reviewText) throws SQLException {
+    public void postReview(Connection con, String userName, String password, int productId,
+                           double rating, String reviewText) throws SQLException {
         con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         con.setAutoCommit(false);
-        //TODO
+        PreparedStatement stmt = null;
+        try {
+            if (isUserAuthorized(con, userName, password)) {
+                stmt = con.prepareStatement("INSERT INTO REVIEWS(USER_NAME, PRODUCT_ID, " +
+                        " REVIEW_TEXT, RATING, REVIEW_DATE) VALUES (?, ?, ?, ?, ?) ");
+                stmt.setString(1, userName);
+                stmt.setInt(2, productId);
+                stmt.setString(3, reviewText);
+                stmt.setDouble(4, rating);
+                stmt.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
+
+                stmt.execute();
+                con.commit();
+            }
+        } catch (SQLException e) {
+            con.rollback();
+            throw e;
+        } finally {
+            if (!Objects.isNull(stmt)) {
+                stmt.close();
+            }
+            con.close();
+        }
     }
 
     /**

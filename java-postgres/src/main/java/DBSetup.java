@@ -30,7 +30,7 @@ public class DBSetup extends DBBase {
                     "  USER_NAME VARCHAR(15)," +
                     "  PRODUCT_ID INTEGER," +
                     "  REVIEW_TEXT TEXT," +
-                    "  RATING FLOAT NOT NULL CHECK (RATING > 0) CHECK (RATING < 5)," +
+                    "  RATING NUMERIC(3, 2) NOT NULL CHECK (RATING >= 0) CHECK (RATING <= 5)," +
                     "  REVIEW_DATE TIMESTAMP NOT NULL," +
                     "  PRIMARY KEY (USER_NAME, PRODUCT_ID)," +
                     "  FOREIGN KEY (USER_NAME) REFERENCES USERS(USER_NAME)," +
