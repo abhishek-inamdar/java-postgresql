@@ -31,7 +31,7 @@ public class DBBase {
      * @return Connection object
      */
     public static Connection getConnection() throws SQLException {
-        if(Objects.isNull(connection) || connection.isClosed()){
+        if (Objects.isNull(connection) || connection.isClosed()) {
             establishConnection();
         }
         return connection;

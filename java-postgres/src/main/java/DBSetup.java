@@ -4,7 +4,7 @@ import java.sql.Statement;
 import java.util.Objects;
 
 /**
- * Utility class to setup schema by creating tables
+ * Utility class to set up schema by creating tables
  *
  * @author Abhishek Inamdar
  */

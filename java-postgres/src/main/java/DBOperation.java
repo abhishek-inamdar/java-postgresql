@@ -178,7 +178,7 @@ public class DBOperation {
         con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         con.setAutoCommit(false);
         PreparedStatement stmt = null;
-        try{
+        try {
             stmt = con.prepareStatement("UPDATE PRODUCTS SET STOCK = STOCK + ? WHERE PRODUCT_ID = ? ");
             stmt.setInt(1, itemCountToAdd);
             stmt.setInt(2, productId);
