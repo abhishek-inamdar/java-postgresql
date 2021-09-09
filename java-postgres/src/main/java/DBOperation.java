@@ -279,8 +279,56 @@ public class DBOperation {
     public ProductInformation getProductAndReviews(Connection con, int productId) throws SQLException {
         con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
-        //TODO
-        return null;
+        PreparedStatement stmtReadProduct = null;
+        PreparedStatement stmtReadReviews = null;
+        ResultSet rsReadProduct = null;
+        ResultSet rsReadReviews = null;
+        try {
+            stmtReadProduct = con.prepareStatement("SELECT PRODUCT_ID, NAME, DESCRIPTION, PRICE, STOCK FROM PRODUCTS WHERE PRODUCT_ID = ? ");
+            stmtReadProduct.setInt(1, productId);
+
+            stmtReadReviews = con.prepareStatement("SELECT PRODUCT_ID, USER_NAME, REVIEW_TEXT, RATING, REVIEW_DATE FROM REVIEWS WHERE PRODUCT_ID = ? ");
+            stmtReadReviews.setInt(1, productId);
+
+            rsReadProduct = stmtReadProduct.executeQuery();
+            rsReadReviews = stmtReadReviews.executeQuery();
+            con.commit();
+            ProductInformation pInfo = null;
+            while (rsReadProduct.next()) {
+                String name = rsReadProduct.getString("NAME");
+                String description = rsReadProduct.getString("DESCRIPTION");
+                double price = rsReadProduct.getDouble("PRICE");
+
+                pInfo = new ProductInformation(productId, name, description, price);
+            }
+            if (!Objects.isNull(pInfo)) {
+                while (rsReadReviews.next()) {
+                    String reviewUser = rsReadReviews.getString("USER_NAME");
+                    String reviewText = rsReadReviews.getString("REVIEW_TEXT");
+                    double rating = rsReadReviews.getDouble("RATING");
+                    LocalDateTime reviewDate = rsReadReviews.getTimestamp("REVIEW_DATE").toLocalDateTime();
+                    pInfo.addReview(new Review(reviewUser, productId, reviewText, rating, reviewDate));
+                }
+            }
+            return pInfo;
+        } catch (SQLException e) {
+            con.rollback();
+            throw e;
+        } finally {
+            if (!Objects.isNull(rsReadProduct)) {
+                rsReadProduct.close();
+            }
+            if (!Objects.isNull(rsReadReviews)) {
+                rsReadReviews.close();
+            }
+            if (!Objects.isNull(stmtReadProduct)) {
+                stmtReadProduct.close();
+            }
+            if (!Objects.isNull(stmtReadReviews)) {
+                stmtReadReviews.close();
+            }
+            con.close();
+        }
     }
 
     /**
@@ -301,10 +349,10 @@ public class DBOperation {
             stmt = con.prepareStatement("SELECT AVG(RATING) AS AVG_RATING FROM REVIEWS WHERE USER_NAME = ? ");
             stmt.setString(1, userName);
             rs = stmt.executeQuery();
+            con.commit();
             while (rs.next()) {
                 userRating = rs.getDouble("AVG_RATING");
             }
-            con.commit();
             return userRating;
         } catch (SQLException e) {
             con.rollback();
