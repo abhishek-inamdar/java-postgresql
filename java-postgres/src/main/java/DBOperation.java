@@ -21,7 +21,7 @@ public class DBOperation {
      */
     public void createAccount(Connection con, String userName, String password,
                               String firstName, String lastName) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         PreparedStatement stmt = null;
         try {
@@ -54,7 +54,7 @@ public class DBOperation {
      * @throws SQLException If SQL error occurs
      */
     private boolean isUserAuthorized(Connection con, String userName, String password) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -92,10 +92,65 @@ public class DBOperation {
      * @throws SQLException If SQL error occurs
      */
     public void submitOrder(Connection con, LocalDateTime date, String username, String password,
-                            Map<String, Integer> productQuantities) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+                            Map<Integer, Integer> productQuantities) throws SQLException {
+        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
-        //TODO
+        PreparedStatement stmtUpdateProducts = null;
+        PreparedStatement stmtCreateOrders = null;
+        PreparedStatement stmtCreateOrderDetails = null;
+        ResultSet rsCreateOrders = null;
+        try {
+            if (isUserAuthorized(con, username, password)) {
+                stmtUpdateProducts = con.prepareStatement("UPDATE PRODUCTS SET STOCK = STOCK - ? " +
+                        " WHERE PRODUCT_ID = ?");
+                stmtCreateOrders = con.prepareStatement("INSERT INTO ORDERS(USER_NAME, ORDER_DATE) " +
+                        " VALUES (?, ?) RETURNING ORDER_ID");
+                stmtCreateOrderDetails = con.prepareStatement("INSERT INTO ORDER_DETAILS(ORDER_ID, " +
+                        " PRODUCT_ID, QUANTITY) VALUES (?, ?, ?)");
+
+                stmtCreateOrders.setString(1, username);
+                stmtCreateOrders.setTimestamp(2, Timestamp.valueOf(date));
+                rsCreateOrders = stmtCreateOrders.executeQuery();
+                int orderId = 0;
+                if (rsCreateOrders.next()) {
+                    orderId = rsCreateOrders.getInt("ORDER_ID");
+                }
+                if (orderId != 0) {
+                    for (Integer productId : productQuantities.keySet()) {
+                        Integer quantity = productQuantities.get(productId);
+
+                        //Update Products table
+                        stmtUpdateProducts.setInt(1, quantity);
+                        stmtUpdateProducts.setInt(2, productId);
+                        stmtUpdateProducts.execute();
+
+                        //Insert Order Details
+                        stmtCreateOrderDetails.setInt(1, orderId);
+                        stmtCreateOrderDetails.setInt(2, productId);
+                        stmtCreateOrderDetails.setInt(3, quantity);
+                        stmtCreateOrderDetails.execute();
+                    }
+                }
+                con.commit();
+            }
+        } catch (SQLException e) {
+            con.rollback();
+            throw e;
+        } finally {
+            if (!Objects.isNull(rsCreateOrders)) {
+                rsCreateOrders.close();
+            }
+            if (!Objects.isNull(stmtCreateOrders)) {
+                stmtCreateOrders.close();
+            }
+            if (!Objects.isNull(stmtCreateOrderDetails)) {
+                stmtCreateOrderDetails.close();
+            }
+            if (!Objects.isNull(stmtUpdateProducts)) {
+                stmtUpdateProducts.close();
+            }
+            con.close();
+        }
     }
 
     /**
@@ -111,7 +166,7 @@ public class DBOperation {
      */
     public void postReview(Connection con, String userName, String password, int productId,
                            double rating, String reviewText) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         PreparedStatement stmt = null;
         try {
@@ -151,7 +206,7 @@ public class DBOperation {
      */
     public int addProduct(Connection con, String name, String description, double price,
                           int initialStock) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -193,7 +248,7 @@ public class DBOperation {
      */
     public void updateStockLevel(Connection con, int productId, int itemCountToAdd) throws SQLException {
         assert itemCountToAdd > 0;
-        con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         PreparedStatement stmt = null;
         try {
@@ -221,8 +276,8 @@ public class DBOperation {
      * @return Product information with all product reviews
      * @throws SQLException If SQL error occurs
      */
-    public ProductInformation getProductAndReviews(Connection con, String productId) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+    public ProductInformation getProductAndReviews(Connection con, int productId) throws SQLException {
+        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         //TODO
         return null;
@@ -236,10 +291,32 @@ public class DBOperation {
      * @return Average rating by the User
      * @throws SQLException If SQL error occurs
      */
-    public float getAverageUserRating(Connection con, String userName) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+    public double getAverageUserRating(Connection con, String userName) throws SQLException {
+        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
-        //TODO
-        return 0f;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        double userRating = 0.0;
+        try {
+            stmt = con.prepareStatement("SELECT AVG(RATING) AS AVG_RATING FROM REVIEWS WHERE USER_NAME = ? ");
+            stmt.setString(1, userName);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                userRating = rs.getDouble("AVG_RATING");
+            }
+            con.commit();
+            return userRating;
+        } catch (SQLException e) {
+            con.rollback();
+            throw e;
+        } finally {
+            if (!Objects.isNull(rs)) {
+                rs.close();
+            }
+            if (!Objects.isNull(stmt)) {
+                stmt.close();
+            }
+            con.close();
+        }
     }
 }

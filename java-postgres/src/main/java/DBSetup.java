@@ -23,7 +23,7 @@ public class DBSetup extends DBBase {
                     "  NAME TEXT NOT NULL," +
                     "  DESCRIPTION TEXT," +
                     "  PRICE NUMERIC NOT NULL CHECK (PRICE > 0)," +
-                    "  STOCK INTEGER NOT NULL CHECK (STOCK > 0)," +
+                    "  STOCK INTEGER NOT NULL CHECK (STOCK >= 0)," +
                     "  PRIMARY KEY (PRODUCT_ID));";
     static final String CREATE_REVIEWS_TABLE =
             "CREATE TABLE REVIEWS (" +
@@ -37,14 +37,14 @@ public class DBSetup extends DBBase {
                     "  FOREIGN KEY (PRODUCT_ID) REFERENCES PRODUCTS(PRODUCT_ID));";
     static final String CREATE_ORDERS_TABLE =
             "CREATE TABLE ORDERS (" +
-                    "  ORDER_ID VARCHAR(15)," +
+                    "  ORDER_ID SERIAL," +
                     "  USER_NAME VARCHAR(15) NOT NULL," +
                     "  ORDER_DATE TIMESTAMP NOT NULL," +
                     "  PRIMARY KEY (ORDER_ID)," +
                     "  FOREIGN KEY (USER_NAME) REFERENCES USERS(USER_NAME));";
     static final String CREATE_ORDER_DETAILS_TABLE =
             "CREATE TABLE ORDER_DETAILS (" +
-                    "  ORDER_ID VARCHAR(15)," +
+                    "  ORDER_ID INTEGER," +
                     "  PRODUCT_ID INTEGER," +
                     "  QUANTITY INTEGER NOT NULL CHECK (QUANTITY > 0)," +
                     "  PRIMARY KEY (ORDER_ID, PRODUCT_ID)," +
