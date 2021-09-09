@@ -1,4 +1,3 @@
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -10,12 +9,11 @@ public class Evaluate {
     static final String FK_CONSTRAINT_SQL_STATE = "23503";
 
     public static void main(String[] args) {
-        Connection con = null;
         try {
             DBSetup dbSetup = new DBSetup();
             dbSetup.createTables();
         } catch (SQLException e) {
-            System.err.println(e);
+            System.err.println(e.getMessage());
         }
         DBOperation operation = new DBOperation();
         try {

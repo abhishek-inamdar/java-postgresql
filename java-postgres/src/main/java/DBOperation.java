@@ -63,12 +63,10 @@ public class DBOperation {
             stmt.setString(1, userName);
             stmt.setString(2, password);
             rs = stmt.executeQuery();
-            if (rs.next() && userName.equals(rs.getString(1))) {
-                return true;
-            } else {
-                return false;
-            }
+            con.commit();
+            return rs.next() && userName.equals(rs.getString(1));
         } catch (SQLException e) {
+            con.rollback();
             throw e;
         } finally {
             if (!Objects.isNull(rs)) {
@@ -159,7 +157,7 @@ public class DBOperation {
      * @param con        Connection
      * @param userName   Username
      * @param password   Password
-     * @param productId  Product Id
+     * @param productId  Product ID
      * @param rating     rating
      * @param reviewText Review Text
      * @throws SQLException If SQL error occurs
@@ -242,7 +240,7 @@ public class DBOperation {
      * Updates the Stock quantity of the product
      *
      * @param con            Connection
-     * @param productId      Product Id
+     * @param productId      Product ID
      * @param itemCountToAdd Quantity of products to Add
      * @throws SQLException If SQL error occurs
      */
@@ -272,7 +270,7 @@ public class DBOperation {
      * Fetches Product information based on given product ID and the related reviews
      *
      * @param con       Connection
-     * @param productId Product Id
+     * @param productId Product ID
      * @return Product information with all product reviews
      * @throws SQLException If SQL error occurs
      */
