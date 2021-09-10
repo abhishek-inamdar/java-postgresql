@@ -38,7 +38,7 @@ public class Utility {
     public static final int MAX_PRODUCT_QUANTITY_IN_ORDER = 3;
 
     public static final int MINUTES_TO_RUN = 5;
-    public static final int MAX_THREADS_TO_RUN = 2;
+    public static final int MAX_THREADS_TO_RUN = 10;
     public static final String CREATE_ACCOUNT = "createAccount";
     public static final String ADD_PRODUCT = "addProduct";
     public static final String UPDATE_STOCK_LEVEL = "updateStockLevel";
