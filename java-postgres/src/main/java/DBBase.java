@@ -20,10 +20,16 @@ public class DBBase {
      * Database Properties file name
      */
     private static final String DB_PROPERTY_FILE = "db.properties";
+
     /**
-     * Connection Object
+     * Connection object
      */
-    private static Connection connection = null;
+    private static Connection con = null;
+
+    /**
+     * DB properties (URL, USERNAME, PASSWORD)
+     */
+    private static String url = null, username = null, password = null;
 
     /**
      * Returns Connection
@@ -31,10 +37,10 @@ public class DBBase {
      * @return Connection object
      */
     public static Connection getConnection() throws SQLException {
-        if (Objects.isNull(connection) || connection.isClosed()) {
-            establishConnection();
+        if (!Objects.isNull(con) && !con.isClosed()) {
+            return con;
         }
-        return connection;
+        return establishConnection();
     }
 
     /**
@@ -42,8 +48,10 @@ public class DBBase {
      *
      * @throws SQLException If an SQL Error occurs
      */
-    public static void establishConnection() throws SQLException {
-        if (Objects.isNull(connection) || connection.isClosed()) {
+    private static Connection establishConnection() throws SQLException {
+        if (url != null && username != null) {
+            con = DriverManager.getConnection(url, username, password);
+        } else {
             // Read the properties file
             // it should contain following properties
             // URL, USERNAME, PASSWORD
@@ -54,7 +62,7 @@ public class DBBase {
             } catch (URISyntaxException e) {
                 System.err.println("Error loading db.properties file" + e.getMessage());
             }
-            String url = null, username = null, password = null;
+
 
             if (!Objects.isNull(dbProperties)) {
                 try {
@@ -85,14 +93,14 @@ public class DBBase {
                     System.err.println("Error reading db.properties file");
                 }
             }
-
             if (url != null && username != null) {
-                connection = DriverManager.getConnection(url, username, password);
-            }
-            if (Objects.isNull(connection)) {
-                System.err.println("Can not establish the DB connection");
+                con = DriverManager.getConnection(url, username, password);
             }
         }
+
+        //Setting isolation level to Serializable
+        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+        return con;
     }
 
     /**

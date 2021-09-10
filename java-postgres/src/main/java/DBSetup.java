@@ -8,7 +8,7 @@ import java.util.Objects;
  *
  * @author Abhishek Inamdar
  */
-public class DBSetup extends DBBase {
+public class DBSetup {
     static final String DROP_TABLES = "DROP TABLE IF EXISTS ORDER_DETAILS, ORDERS, REVIEWS, PRODUCTS, USERS";
     static final String CREATE_USERS_TABLE =
             "CREATE TABLE USERS (" +
@@ -57,7 +57,7 @@ public class DBSetup extends DBBase {
      * @throws SQLException If an SQl Error occurs
      */
     public void createTables() throws SQLException {
-        Connection con = getConnection();
+        Connection con = DBBase.getConnection();
         Statement stmt = null;
         try {
             stmt = con.createStatement();
@@ -71,9 +71,6 @@ public class DBSetup extends DBBase {
             try {
                 if (!Objects.isNull(stmt)) {
                     stmt.close();
-                }
-                if (!Objects.isNull(con)) {
-                    con.close();
                 }
             } catch (SQLException e) {
                 System.err.println("Something went REALLY wrong.");

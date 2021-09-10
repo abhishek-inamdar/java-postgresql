@@ -21,7 +21,6 @@ public class DBOperation {
      */
     public void createAccount(Connection con, String userName, String password,
                               String firstName, String lastName) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         PreparedStatement stmt = null;
         try {
@@ -40,7 +39,6 @@ public class DBOperation {
             if (!Objects.isNull(stmt)) {
                 stmt.close();
             }
-            con.close();
         }
     }
 
@@ -54,7 +52,6 @@ public class DBOperation {
      * @throws SQLException If SQL error occurs
      */
     private boolean isUserAuthorized(Connection con, String userName, String password) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -91,7 +88,6 @@ public class DBOperation {
      */
     public void submitOrder(Connection con, LocalDateTime date, String username, String password,
                             Map<Integer, Integer> productQuantities) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         PreparedStatement stmtUpdateProducts = null;
         PreparedStatement stmtCreateOrders = null;
@@ -147,7 +143,6 @@ public class DBOperation {
             if (!Objects.isNull(stmtUpdateProducts)) {
                 stmtUpdateProducts.close();
             }
-            con.close();
         }
     }
 
@@ -164,7 +159,6 @@ public class DBOperation {
      */
     public void postReview(Connection con, String userName, String password, int productId,
                            double rating, String reviewText) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         PreparedStatement stmt = null;
         try {
@@ -187,7 +181,6 @@ public class DBOperation {
             if (!Objects.isNull(stmt)) {
                 stmt.close();
             }
-            con.close();
         }
     }
 
@@ -204,7 +197,6 @@ public class DBOperation {
      */
     public int addProduct(Connection con, String name, String description, double price,
                           int initialStock) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -217,10 +209,10 @@ public class DBOperation {
             stmt.setDouble(3, price);
             stmt.setInt(4, initialStock);
             rs = stmt.executeQuery();
-            con.commit();
             if (rs.next()) {
                 productId = rs.getInt("PRODUCT_ID");
             }
+            con.commit();
             return productId;
         } catch (SQLException e) {
             con.rollback();
@@ -232,7 +224,6 @@ public class DBOperation {
             if (!Objects.isNull(stmt)) {
                 stmt.close();
             }
-            con.close();
         }
     }
 
@@ -246,7 +237,6 @@ public class DBOperation {
      */
     public void updateStockLevel(Connection con, int productId, int itemCountToAdd) throws SQLException {
         assert itemCountToAdd > 0;
-        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         PreparedStatement stmt = null;
         try {
@@ -262,7 +252,6 @@ public class DBOperation {
             if (!Objects.isNull(stmt)) {
                 stmt.close();
             }
-            con.close();
         }
     }
 
@@ -275,7 +264,6 @@ public class DBOperation {
      * @throws SQLException If SQL error occurs
      */
     public ProductInformation getProductAndReviews(Connection con, int productId) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         PreparedStatement stmtReadProduct = null;
         PreparedStatement stmtReadReviews = null;
@@ -290,7 +278,7 @@ public class DBOperation {
 
             rsReadProduct = stmtReadProduct.executeQuery();
             rsReadReviews = stmtReadReviews.executeQuery();
-            con.commit();
+
             ProductInformation pInfo = null;
             while (rsReadProduct.next()) {
                 String name = rsReadProduct.getString("NAME");
@@ -308,6 +296,7 @@ public class DBOperation {
                     pInfo.addReview(new Review(reviewUser, productId, reviewText, rating, reviewDate));
                 }
             }
+            con.commit();
             return pInfo;
         } catch (SQLException e) {
             con.rollback();
@@ -325,7 +314,6 @@ public class DBOperation {
             if (!Objects.isNull(stmtReadReviews)) {
                 stmtReadReviews.close();
             }
-            con.close();
         }
     }
 
@@ -338,7 +326,6 @@ public class DBOperation {
      * @throws SQLException If SQL error occurs
      */
     public double getAverageUserRating(Connection con, String userName) throws SQLException {
-        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         con.setAutoCommit(false);
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -347,10 +334,10 @@ public class DBOperation {
             stmt = con.prepareStatement("SELECT AVG(RATING) AS AVG_RATING FROM REVIEWS WHERE USER_NAME = ? ");
             stmt.setString(1, userName);
             rs = stmt.executeQuery();
-            con.commit();
             while (rs.next()) {
                 userRating = rs.getDouble("AVG_RATING");
             }
+            con.commit();
             return userRating;
         } catch (SQLException e) {
             con.rollback();
@@ -362,7 +349,6 @@ public class DBOperation {
             if (!Objects.isNull(stmt)) {
                 stmt.close();
             }
-            con.close();
         }
     }
 }
