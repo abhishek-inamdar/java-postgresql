@@ -22,7 +22,7 @@ public class DBSetup extends DBBase {
                     "  PRODUCT_ID SERIAL," +
                     "  NAME TEXT NOT NULL," +
                     "  DESCRIPTION TEXT," +
-                    "  PRICE NUMERIC NOT NULL CHECK (PRICE > 0)," +
+                    "  PRICE NUMERIC(12,2) NOT NULL CHECK (PRICE > 0)," +
                     "  STOCK INTEGER NOT NULL CHECK (STOCK >= 0)," +
                     "  PRIMARY KEY (PRODUCT_ID));";
     static final String CREATE_REVIEWS_TABLE =
