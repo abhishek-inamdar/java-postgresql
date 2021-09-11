@@ -17,8 +17,13 @@ import java.util.concurrent.Executors;
  * @author Abhishek Inamdar
  */
 public class Evaluate extends Utility {
+
+    static int noOfOperations = 0;
+    static int noOfProductStockFailure = 0;
+
     /**
      * Method to choose operation based on the probability - integer based
+     *
      * @param random random integer in the range 1 to 100
      * @return Chosen DB operation
      */
@@ -53,11 +58,14 @@ public class Evaluate extends Utility {
         //Loop for threadCount 1 to 10
         for (int threadCount = 1; threadCount <= MAX_THREADS_TO_RUN; threadCount++) {
             try {
+                noOfOperations = 0;
+                noOfProductStockFailure = 0;
 
                 //DB Initialization and setup
                 DBInitialize initialize = new DBInitialize();
                 initialize.setupAndInitializeDB();
 
+                System.out.println("ThreadCount: " + threadCount + " start!");
                 //creating threadpool and executing threads
                 ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
                 final long startTime = System.nanoTime();
@@ -73,8 +81,8 @@ public class Evaluate extends Utility {
                         Objects.requireNonNull(con);
                         DBOperation operation = new DBOperation();
                         String randomOperation = getOperation(intBetween(1, 100));
-                        //System.out.println(Thread.currentThread().getId() + ": About to execute:  " + randomOperation);
                         try {
+                            noOfOperations++;
                             Fairy fairy;
                             TextProducer text;
                             int userId, productId;
@@ -144,6 +152,11 @@ public class Evaluate extends Utility {
                                     break;
                             }
                         } catch (SQLException e) {
+                            if (CONSTRAINT_SQL_STATE.equals(e.getSQLState())
+                                    && SUBMIT_ORDER.equals(randomOperation)) {
+                                noOfProductStockFailure++;
+                            }
+
                             if (!DUPLICATE_SQL_STATE.equals(e.getSQLState())
                                     && !FK_CONSTRAINT_SQL_STATE.equals(e.getSQLState())
                                     && !CONSTRAINT_SQL_STATE.equals(e.getSQLState())
@@ -157,6 +170,10 @@ public class Evaluate extends Utility {
                 }
                 //Shutting down all the threads
                 executorService.shutdownNow();
+
+                //printing results for Graph plotting
+                System.out.println("ThreadCount: " + threadCount + " End! Total Operations: " + noOfOperations
+                        + ", noOfProductStockFailure: " + noOfProductStockFailure);
             } catch (Exception e) {
                 System.err.println("SOMETHING WENT WRONG!!" + e.getMessage());
             }
