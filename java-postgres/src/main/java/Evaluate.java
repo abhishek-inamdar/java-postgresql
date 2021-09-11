@@ -89,6 +89,7 @@ public class Evaluate extends Utility {
                                     String firstName = person.getFirstName();
                                     String lastName = person.getLastName();
                                     operation.createAccount(con, userName, password, firstName, lastName);
+                                    System.gc();
                                     break;
                                 case ADD_PRODUCT:
                                     fairy = Fairy.create();
@@ -98,20 +99,24 @@ public class Evaluate extends Utility {
                                     double productPrice = doubleBetween(MIN_PRODUCT_PRICE, MAX_PRODUCT_PRICE);
                                     int productStock = intBetween(MIN_PRODUCT_STOCK, MAX_PRODUCT_STOCK);
                                     operation.addProduct(con, productName, productDesc, productPrice, productStock);
+                                    System.gc();
                                     break;
                                 case UPDATE_STOCK_LEVEL:
                                     productId = intBetween(1, NUM_PRODUCTS);
                                     int quantity = intBetween(MIN_PRODUCT_STOCK, MAX_PRODUCT_STOCK);
                                     operation.updateStockLevel(con, productId, quantity);
+                                    System.gc();
                                     break;
                                 case GET_PRODUCT_REVIEWS:
                                     productId = intBetween(1, NUM_PRODUCTS);
                                     operation.getProductAndReviews(con, productId);
+                                    System.gc();
                                     break;
                                 case GET_AVERAGE_RATING:
                                     userId = intBetween(1, NUM_USERS);
                                     userName = USER_NAME_PREFIX + userId;
                                     operation.getAverageUserRating(con, userName);
+                                    System.gc();
                                     break;
                                 case SUBMIT_ORDER:
                                     userId = intBetween(1, NUM_USERS);
@@ -121,6 +126,7 @@ public class Evaluate extends Utility {
                                     Map<Integer, Integer> productQuantities = new HashMap<>();
                                     populateProductQuantityMap(productQuantities);
                                     operation.submitOrder(con, orderDate, userName, password, productQuantities);
+                                    System.gc();
                                     break;
                                 case POST_REVIEW:
                                     fairy = Fairy.create();
@@ -132,6 +138,7 @@ public class Evaluate extends Utility {
                                     double rating = doubleBetween(MIN_REVIEW_RATING, MAX_REVIEW_RATING);
                                     String reviewText = text.text();
                                     operation.postReview(con, userName, password, productId, rating, reviewText);
+                                    System.gc();
                                     break;
                                 default:
                                     break;
