@@ -14,4 +14,4 @@ Operations will be selected randomly based on predefined probability.
 run ./gradlew run to execute a program. 
 
 #### Dependencies
-Required dependencies are PostgreSQL Java Driver, and JFairy library
+Required dependencies include PostgreSQL Java Driver, and JFairy library
